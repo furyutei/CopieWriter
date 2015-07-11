@@ -1,0 +1,286 @@
+@charset "utf-8";
+
+.clear {
+    clear: both;
+}
+.clearfix:before, .clearfix:after {
+    content: "";
+    display: block;
+}
+.clearfix:after {
+    clear: both;
+}
+.clearfix {
+    zoom: 1;
+}
+
+.hidden {
+    display: none;
+}
+
+.note {
+    font-size: 80%;
+    color: #191970;
+}
+
+body {
+    font-weight: normal;
+    line-height: 1.4;
+    font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
+    font-size: 14px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+    font-weight: bolder;
+    font-size: 80%;
+}
+
+article, aside, details, footer, header, main, menu, nav, section, summary {
+    display: block;
+}
+
+a {
+    text-decoration: none;
+}
+
+label {
+    font-weight: bolder;
+    margin-right: 4px;
+}
+
+input.button {
+    font-weight: bolder;
+    cursor: pointer;
+    border: solid 1px #888888;
+    border-radius: 2px;
+    color: #000080;
+    background: #cce0ff;
+}
+
+input[type="text"],
+input[type="number"] {
+    border-radius: 3px;
+}
+
+div#wrapper {
+    width: 100%;
+}
+
+div#header {
+    margin: 0 auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: 100%;
+    overflow: hidden;
+    height: 59px;
+    background: #f0f8ff;
+    border-bottom: solid 1px #191970;
+}
+
+div#header header {
+    min-width: 900px;
+}
+
+div#header header h1 {
+    float: left;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+    width: 234px;
+    height: 60px;
+}
+
+div#header header h1 a {
+    display: block;
+    width: 234px;
+    height: 60px;
+    background: url(../images/copie.png) top left;
+    text-indent: -9999px;
+}
+
+div#header header div#menu {
+    float: left;
+    width: 640px;
+    overflow: hidden;
+}
+
+div#header header div#menu div#navi {
+    margin: 4px 16px;
+}
+
+div#header header div#menu div#navi div#credit {
+    float: left;
+    margin: 0 16px 8px 0;
+    vertical-align: top;
+}
+
+div#header header div#menu div#navi div#credit img {
+    margin-right: 4px;
+}
+
+div#header header div#menu div#navi div#credit a {
+    margin-right: 4px;
+}
+
+div#header header div#menu div#navi div#credit * {
+    vertical-align: top;
+}
+
+div#header header div#menu div#navi div#sns {
+    float: left;
+}
+
+div#header header div#menu div#toolbar {
+    margin: 0 16px 6px;
+}
+
+div#header header div#menu div#toolbar div#download-copie-setting-container {
+    float: left;
+    margin: 0 16px 0 0;
+}
+
+div#header header div#menu div#toolbar div#download-copie-setting-container a {
+    font-size: 14px;
+}
+
+div#header header div#menu div#toolbar div#upload-copie-setting-container {
+    float: left;
+    margin: 0 16px 0 0;
+    width: 340px;
+}
+
+div#header header div#menu div#toolbar div#upload-copie-setting-container span#upload-copie-setting-file {
+    color: #2f4f4f;
+    font-size: 12px;
+}
+
+div#header header div#menu div#toolbar div#upload-copie-setting-container input#upload-copie-setting {
+    display: none;
+}
+
+div#header header div#menu div#toolbar div#phrase-toolbar {
+    float: left;
+    margin: 0 16px 0 0;
+}
+
+div#contents {
+    margin: 60px auto 0 auto;
+    overflow: hidden;
+}
+
+div#contents div#main {
+    overflow: hidden;
+    float: right;
+    width: 100%;
+    margin: 0 0 0 -320px;
+}
+
+div#contents div#main div#main-inner {
+    position: relative;
+    margin: 0 0 0 320px;
+}
+
+div#contents div#main div#main-inner article {
+}
+
+div#contents div#main div#main-inner article section#phrase-container {
+    margin-top: 2px;
+}
+
+div#contents div#main div#main-inner article section#phrase-container div.phrase {
+    float: left;
+    margin: 2px 4px;
+    padding: 4px 8px;
+    width: 382px;
+    border: solid 1px #808080;
+    border-radius: 3px;
+    background: #f5f5f5;
+}
+
+div#contents div#main div#main-inner article section#phrase-container div.phrase.current {
+    border: solid 1px #ff6347;
+    background: #ffd700;
+}
+
+div#contents div#main div#main-inner article section#phrase-container div.phrase label {
+    font-size: 12px;
+}
+
+div#contents div#main div#main-inner article section#phrase-container div.phrase input {
+    font-size: 12px;
+}
+
+div#contents div#main div#main-inner article section#phrase-container div.phrase input.phrase-text {
+    width: 148px;
+}
+
+div#contents div#main div#main-inner article section#phrase-container div.phrase input.phrase-x,
+div#contents div#main div#main-inner article section#phrase-container div.phrase input.phrase-y,
+div#contents div#main div#main-inner article section#phrase-container div.phrase input.phrase-size {
+    width: 34px;
+}
+
+div#contents div#sidebar {
+    float: left;
+    position: fixed;
+    width: 320px;
+    top: 60px;
+    left: 0;
+}
+
+div#contents div#sidebar div.container {
+    margin: 4px 2px;
+    border: solid 1px #cccccc;
+    border-radius: 4px;
+}
+
+div#contents div#sidebar div#copie-container {
+    background: #ffffe0;
+}
+
+div#contents div#sidebar div#copie-container canvas#copie {
+    margin: 8px 8px 0;
+}
+
+div#contents div#sidebar div#copie-container div.download-copie {
+    margin: 0 8px 4px;
+    font-size: 12px;
+}
+
+div#contents div#sidebar div#copie-container div#colorpicker {
+    margin: 8px 8px;
+}
+
+div#contents div#sidebar div#copie-container div#colorpicker input#background-color {
+    width: 80px;
+}
+
+div#contents div#sidebar div#help-container {
+    background: #f0fff0;
+}
+
+div#contents div#sidebar div#help-container h2 {
+    margin: 8px 8px;
+    color: #8b0000;
+}
+
+div#contents div#sidebar div#help-container ul {
+    margin: 8px auto 16px 16px;
+    padding: 0 0 0 0;
+    list-style-type: none;
+}
+
+div#contents div#sidebar div#help-container ul li {
+    margin: 0 auto 8px 0;
+}
+
+div#contents div#sidebar div#help-container ul p {
+    margin: 4px 8px;
+    padding: 0 0 0 0;
+    font-size: 12px;
+}
+
+/* ■ end of file */

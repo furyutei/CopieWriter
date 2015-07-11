@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+<meta charset="utf-8" />
+
+<title>CopieWriter: コピィ・ライター</title>
+
+<link rel="stylesheet" href="./css/CopieWriter.css" />
+<link rel="stylesheet" href="./colorpicker/css/colorpicker.css" />
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="./colorpicker/js/colorpicker.js"></script>
+<script src="./js/makeClass.js"></script>
+<script src="./js/getBrightness.js"></script>
+<script src="./js/CopieWriter.js"></script>
+
+</head>
+
+<body>
+
+<div id="wrapper">
+
+    <div id="header">
+        <header class="clearfix">
+            <h1>
+                <a href="http://furyu.nazo.cc/CopieWriter/">CopieWriter: コピィ・ライター</a>
+            </h1>
+            
+            <div id="menu">
+                <div id="navi" class="clearfix">
+                    <div id="credit">
+                        <a href="http://d.hatena.ne.jp/furyu-tei"><img src="./images/kaze_16.png" width="16" height="16" />風柳</a>(<a href="https://twitter.com/furyutei">@furyutei</a>)
+                        <span class="note">※元ネタ → <a href="http://copie.hatelabo.jp/">はてなコピィ</a></span>
+                    </div>
+                    
+                    <div id="sns">
+                        <a href="https://twitter.com/share" class="twitter-share-button" data-via="furyutei" data-hashtags="copiewriter">Tweet</a>
+<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+
+<a href="http://b.hatena.ne.jp/entry/http://furyu.nazo.cc/CopieWriter/" class="hatena-bookmark-button" data-hatena-bookmark-title="CopieWriter: コピィ・ライター" data-hatena-bookmark-layout="standard-balloon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+                    </div>
+                    
+                <!-- /#navi --></div>
+                <div id="toolbar" class="clearfix">
+                    <div id="download-copie-setting-container">
+                        <a id="download-copie-setting" href="#" download="copie-setting.json">設定ダウンロード</a>
+                    </div>
+                    
+                    <div id="upload-copie-setting-container">
+                        <label for="upload-copie-setting-button"></label>
+                        <input type="button" id="upload-copie-setting-button" class="button" value="設定アップロード" />
+                        <input type="file" id="upload-copie-setting" />
+                        <span id="upload-copie-setting-file">(指定なし)</span>
+                    </div>
+                    
+                    <div id="phrase-toolbar">
+                        <input type="button" id="phrase-add-button" class="button" value="フレーズ追加" />
+                    </div>
+                <!-- /#toolbar --></div>
+            <!-- /#menu --></div>
+        </header>
+    <!-- /#header --></div>
+    
+    <div id="contents">
+    
+        <div id="main">
+            <div id="main-inner">
+                <article>
+                    <section id="phrase-container" class="clearfix">
+                    </section>
+                </article>
+            <!-- /#main-inner--></div>
+        <!-- /#main --></div>
+        
+        <div id="sidebar">
+            <div id="copie-container" class="container">
+                <canvas id="copie" width="234" height="60"></canvas>
+                <div class="download-copie">
+                    <a id="download-copie" href="#" download="copie.png">コピィのダウンロード</a>
+                </div>
+                <div id="colorpicker">
+                    <label for="background-color">背景色</label><input type="text" id="background-color" name="background-color" value="#ffffff" />
+                    <input type="button" id="random-color-button" class="button" value="ランダム" />
+                </div>
+            <!-- /#copie-container --></div>
+            
+            <div id="help-container" class="container">
+                <div class="shortcut">
+                    <h2>ショートカットキー</h2>
+                    <ul>
+                        <li>
+                            <h3>[Ctrl]+[Enter]</h3>
+                            <p>
+                                フレーズ追加
+                            </p>
+                        </li>
+                        <li>
+                            <h3>[Ctrl]+[Delete]</h3>
+                            <p>
+                                フレーズ削除
+                            </p>
+                        </li>
+                        <li>
+                            <h3>[Shift]+[↑]／[Shift]+[↓]</h3>
+                            <p>
+                                X・Y・SIZEの入力欄にて、値を10ずつ増減
+                            </p>
+                        </li>
+                        <li class="note">※ショートカットキーはフレーズ入力欄でのみ有効</p></li>
+                    </ul>
+                <!-- /.shortcut --></div>
+                
+                <div class="etc">
+                    <h2>その他の操作</h2>
+                    <ul>
+                        <li>
+                            <h3>X・Y・SIZE上でマウスホイール</h3>
+                            <p>
+                                当該の値を増減（[Shift]併用で10ずつ）
+                            </p>
+                        </li>
+                        <li>
+                            <h3>フレーズをクリック</h3>
+                            <p>
+                                クリックしたフレーズにフォーカスが移動
+                            </p>
+                        </li>
+                        <li>
+                            <h3>コピィ画像をクリック</h3>
+                            <p>
+                                フォーカスのあるフレーズが当該位置に移動
+                            </p>
+                        </li>
+                    </ul>
+                <!-- /.shortcut --></div>
+            </div>
+        <!-- /#sidebar --></div>
+        
+    <!-- /#contents --></div>
+    
+    <div id="footer">
+        <footer>
+        </footer>
+    <!-- /#footer --></div>
+
+<!-- /#wrapper --></div>
+
+<div class="hidden">
+    <div class="phrase" id="phrase-template">
+        <label for="phrase-text"></label><input type="text" class="phrase-text" name="text" value="" />
+        <label for="phrase-x">x</label><input type="number" class="phrase-x" name="x" value="0" />
+        <label for="phrase-y">y</label><input type="number" class="phrase-y" name="y" value="0" />
+        <label for="phrase-size">size</label><input type="number" class="phrase-size" name="size" value="12" />
+        <input type="button" class="phrase-delete button" name="delete" value="消" />
+    <!-- /.phrase --></div>
+<!-- /.hidden --></div>
+
+</body>
+
+</html>
