@@ -494,7 +494,9 @@ var CopieWriter = makeClass(null, {
         var self = this;
         
         $(w).on('beforeunload', function(event) {
-            return '編集を破棄して、ページを移動しますか？';
+            if (self.jq_download_copie.attr('href') != self.jq_copie.get(0).toDataURL()) {
+                return '編集を破棄して、ページを移動しますか？';
+            };
         });
     }   //  end of sel_pageunload_event()
 
@@ -781,6 +783,8 @@ var CopieWriter = makeClass(null, {
                 var setting = JSON.parse(setting_json);
                 self.set_setting(setting);
                 self.jq_upload_copie_setting_file.text(file.name);
+                self.update_copie_data_url();
+                self.update_setting_data_url();
             }
             catch (error) {
                 alert(error);
