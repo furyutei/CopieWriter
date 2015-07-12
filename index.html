@@ -44,12 +44,12 @@
                 <!-- /#navi --></div>
                 <div id="toolbar" class="clearfix">
                     <div id="download-copie-setting-container">
-                        <a id="download-copie-setting" href="#" download="copie-setting.json">設定ダウンロード</a>
+                        <a id="download-copie-setting" href="#" download="copie-setting.json">設定をダウンロード</a>
                     </div>
                     
                     <div id="upload-copie-setting-container">
                         <label for="upload-copie-setting-button"></label>
-                        <input type="button" id="upload-copie-setting-button" class="button" value="設定アップロード" />
+                        <input type="button" id="upload-copie-setting-button" class="button" value="設定の読み込み" />
                         <input type="file" id="upload-copie-setting" />
                         <span id="upload-copie-setting-file">(指定なし)</span>
                     </div>
@@ -79,10 +79,14 @@
                 <div class="download-copie">
                     <a id="download-copie" href="#" download="copie.png">コピィのダウンロード</a>
                 </div>
-                <div id="colorpicker">
+                <form id="initial-copie-container" class="parts-container">
+                    <label for="initial-copie">コピィ</label><input type="text" id="initial-copie" name="initial-copie" value="" />
+                    <input type="button" id="initial-copie-button" class="button" value="自動配置" />
+                </form>
+                <form id="colorpicker" class="parts-container">
                     <label for="background-color">背景色</label><input type="text" id="background-color" name="background-color" value="#ffffff" />
                     <input type="button" id="random-color-button" class="button" value="ランダム" />
-                </div>
+                </form>
             <!-- /#copie-container --></div>
             
             <div id="help-container" class="container">

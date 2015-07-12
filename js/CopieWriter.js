@@ -8,6 +8,8 @@ var DEFAULT_UPLOAD_COPIE_SETTING_SELECTOR = 'input#upload-copie-setting';
 var DEFAULT_UPLOAD_COPIE_SETTING_BUTTON_SELECTOR = 'input#upload-copie-setting-button';
 var DEFAULT_UPLOAD_COPIE_SETTING_FILE_SELECTOR = '#upload-copie-setting-file';
 var DEFAULT_DROP_COPIE_SETTING_SELECTOR = 'body';
+var DEFAULT_INITIAL_COPIE_SELECTOR = 'input#initial-copie';
+var DEFAULT_INITIAL_COPIE_BUTTON_SELECTOR = 'input#initial-copie-button';
 var DEFAULT_BACKGROUND_COLOR_SELECTOR = 'input#background-color';
 var DEFAULT_RANDOM_COLOR_BUTTON_SELECTOR = 'input#random-color-button';
 var DEFAULT_PHRASE_TEMPLATE_SELECTOR = 'div#phrase-template';
@@ -16,7 +18,7 @@ var DEFAULT_PHRASE_CONTAINER_SELECTOR = 'section#phrase-container';
 var DEFAULT_PHRASE_ADD_BUTTON_SELECTOR = 'input#phrase-add-button';
 
 var DEFAULT_FONT_FAMILY = "'Hiragino Kaku Gothic Pro', 'Meiryo', 'MS PGothic', 'sans-serif'";
-var DEFAULT_FONT_SIZE = 12;
+var DEFAULT_FONT_SIZE = 25;
 var DEFAULT_COLOR = '#000000';
 var DEFAULT_BACKGROUND_COLOR = '#FFFFFF';
 var DEFAULT_BASELINE = 'middle';
@@ -420,10 +422,13 @@ var CopieWriter = makeClass(null, {
         var upload_copie_setting_button_selector = parameters.upload_copie_setting_button_selector;
         var upload_copie_setting_file_selector = parameters.upload_copie_setting_file_selector;
         var drop_copie_setting_selector = parameters.drop_copie_setting_selector;
+        var initial_copie_selector = parameters.initial_copie_selector;
+        var initial_copie_button_selector = parameters.initial_copie_button_selector;
         var background_color_selector = parameters.background_color_selector;
         var random_color_button_selector = parameters.random_color_button_selector;
         var phrase_add_button_selector = parameters.phrase_add_button_selector;
         
+        var url_copie_setting = parameters.url_copie_setting;
         var reverse_y_direction = parameters.reverse_y_direction;
         
         if (!canvas_selector) {canvas_selector = DEFAULT_CANVAS_SELECTOR;}
@@ -433,6 +438,8 @@ var CopieWriter = makeClass(null, {
         if (!upload_copie_setting_button_selector) {upload_copie_setting_button_selector = DEFAULT_UPLOAD_COPIE_SETTING_BUTTON_SELECTOR;}
         if (!upload_copie_setting_file_selector) {upload_copie_setting_file_selector = DEFAULT_UPLOAD_COPIE_SETTING_FILE_SELECTOR;}
         if (!drop_copie_setting_selector) {drop_copie_setting_selector = DEFAULT_DROP_COPIE_SETTING_SELECTOR;}
+        if (!initial_copie_selector) {initial_copie_selector = DEFAULT_INITIAL_COPIE_SELECTOR;}
+        if (!initial_copie_button_selector) {initial_copie_button_selector = DEFAULT_INITIAL_COPIE_BUTTON_SELECTOR;}
         if (!background_color_selector) {background_color_selector = DEFAULT_BACKGROUND_COLOR_SELECTOR;}
         if (!random_color_button_selector) {random_color_button_selector = DEFAULT_RANDOM_COLOR_BUTTON_SELECTOR;}
         if (!phrase_add_button_selector) {phrase_add_button_selector = DEFAULT_PHRASE_ADD_BUTTON_SELECTOR;}
@@ -446,6 +453,8 @@ var CopieWriter = makeClass(null, {
         var jq_upload_copie_setting_button = $(upload_copie_setting_button_selector);
         var jq_upload_copie_setting_file = $(upload_copie_setting_file_selector);
         var jq_drop_copie_setting = $(drop_copie_setting_selector);
+        var jq_initial_copie = $(initial_copie_selector);
+        var jq_initial_copie_button = $(initial_copie_button_selector);
         var jq_background_color = $(background_color_selector);
         var jq_random_color_button = $(random_color_button_selector);
         var jq_phrase_add_button = $(phrase_add_button_selector);
@@ -457,10 +466,13 @@ var CopieWriter = makeClass(null, {
         self.jq_upload_copie_setting_button = jq_upload_copie_setting_button;
         self.jq_upload_copie_setting_file = jq_upload_copie_setting_file;
         self.jq_drop_copie_setting = jq_drop_copie_setting;
+        self.jq_initial_copie = jq_initial_copie;
+        self.jq_initial_copie_button = jq_initial_copie_button;
         self.jq_background_color = jq_background_color;
         self.jq_random_color_button = jq_random_color_button;
         self.jq_phrase_add_button = jq_phrase_add_button;
         
+        self.url_copie_setting = url_copie_setting;
         self.reverse_y_direction = reverse_y_direction;
         
         var parameters = {};
@@ -478,16 +490,25 @@ var CopieWriter = makeClass(null, {
         self.set_upload_setting_event();
         self.set_download_setting_event();
         self.set_color_picker_event();
+        self.set_initial_copie_event();
         self.set_random_color_event();
         self.set_phrase_add_event();
         self.set_copie_click_event();
         
-        Phrase({
-            copie_context: copie_context
-        ,   refresh_copy : true
-        ,   current : true
-        });
-        
+        if (self.url_copie_setting) {
+            $.get(self.url_copie_setting, function(setting) {
+                self.update_copie_setting(setting);
+            }, 'json');
+        }
+        else {
+            Phrase({
+                copie_context: copie_context
+            ,   x : 8
+            ,   y : 16
+            ,   refresh_copy : true
+            ,   current : true
+            });
+        }
     }   //  end of __init__()
     
 ,   sel_pageunload_event : function() {
@@ -495,7 +516,7 @@ var CopieWriter = makeClass(null, {
         
         $(w).on('beforeunload', function(event) {
             if (self.jq_download_copie.attr('href') != self.jq_copie.get(0).toDataURL()) {
-                return '編集を破棄して、ページを移動しますか？';
+                return '編集中のコピィを破棄して、ページを移動しますか？';
             };
         });
     }   //  end of sel_pageunload_event()
@@ -556,7 +577,9 @@ var CopieWriter = makeClass(null, {
                         self.add_phrase();
                         return false;
                     }
-                    $(target).trigger('change', [true]);
+                    setTimeout(function(){
+                        jq_target.trigger('change', [true]);
+                    }, 1);
                     break;
                 case 38: // [↑]
                     if (target.name != 'x' && target.name != 'y' && target.name != 'size') return;
@@ -586,7 +609,9 @@ var CopieWriter = makeClass(null, {
                     return false;
                     break;
                 default:
-                    $(target).trigger('change', [true]);
+                    setTimeout(function(){
+                        jq_target.trigger('change', [true]);
+                    }, 1);
                     break;
             };
         });
@@ -670,14 +695,37 @@ var CopieWriter = makeClass(null, {
         });
     }   //  end of set_color_picker_event()
 
+,   set_initial_copie_event : function() {
+        var self = this;
+        
+        self.jq_initial_copie_button.on('click', function(event) {
+            var phrases = self.get_random_phrases(self.jq_initial_copie.val());
+            self.update_copie_setting({
+                background_color : self.get_random_color_code()
+            ,   phrases : phrases
+            });
+        })
+        
+        self.jq_initial_copie_button.parents('form').on('submit', function(){
+            self.jq_initial_copie_button.click();
+            return false;
+        });
+    }   //  end of set_initial_copie_event()
+
 ,   set_random_color_event : function() {
         var self = this;
         
         self.jq_random_color_button.on('click', function(event) {
-            self.jq_background_color.val('#' + ('000000' + Math.floor(Math.random() * 0xFFFFFF).toString(16)).slice(-6) );
-            self.update_copie_setting();
+            self.update_copie_setting({
+                background_color : self.get_random_color_code()
+            });
         });
         
+        self.jq_random_color_button.parents('form').on('submit', function(){
+            //self.jq_random_color_button.click();
+            self.update_copie_setting();
+            return false;
+        });
     }   //  end of set_random_color_event()
 
 ,   set_phrase_add_event : function() {
@@ -833,6 +881,81 @@ var CopieWriter = makeClass(null, {
         };
     }   //  end of get_color_info()
 
+,   get_random_phrases : function(copie_text) {
+        //  参考： http://copie.hatelabo.jp/.shared.js:c634a1a:/js/jquery-1.3.2.min.js,/js/jsdeferred.jquery.js,/js/jsenumerator.mini.js,/js/site-script.js,/js/HatenaStarMini.js
+        
+        var self = this;
+        
+        var copie_context = self.copie_context;
+        
+        var phrases = [], text_list = [];
+        
+        copie_text.replace(/(?:[「『(（]*).(?:[。、」』)）]*)/g, function (phrase_text) {
+            text_list.push(phrase_text);
+            return phrase_text;
+        });
+        text_list = text_list.slice(0, 50);
+        
+        var flicker = function(middle, range, adjust) {
+            if (!adjust) {adjust = 0;}
+            return Math.floor(middle + (Math.random() * range - (range / 2)) + adjust);
+        };
+        
+        var width = copie_context.width, height = copie_context.height;
+        var align = copie_context.align, baseline = copie_context.baseline;
+        var base_x  = width / copie_text.length;
+        
+        var dx = 0;
+        
+        for (var ci=0, len = text_list.length; ci < len; ci++) {
+            var text = text_list[ci], length = text.length;
+            var x, y, size = flicker(base_x, base_x / 5);
+            var adjust_x, adjust_y;
+            
+            switch (align) {
+                case    'center' :
+                    adjust_x = size * length / 2;
+                    break
+                case    'right' :
+                    adjust_x = size * length;
+                    break;
+                case    'left' :
+                default:
+                    adjust_x = 0;
+                    break
+            }
+            
+            switch (baseline) {
+                case    'top' :
+                    adjust_y = -(size / 2);
+                    break;
+                case    'bottom':
+                    adjust_y = size;
+                    break;
+                case    'middle':
+                default:
+                    adjust_y = 0;
+                    break;
+            }
+            x = flicker(base_x * dx, base_x / 3, adjust_x);
+            y = flicker(height / 2, 20, adjust_y);
+            
+            phrases.push({
+                text : text
+            ,   x : x
+            ,   y : y
+            ,   size : size
+            })
+            dx += length;
+        }
+        
+        return phrases;
+    }   //  end of get_random_phrases()
+
+,   get_random_color_code : function() {
+        return '#' + (0x1000000 | Math.floor(Math.random() * 0x1000000)).toString(16).slice(1);
+    }   //  end of get_random_color_code()
+
 ,   update_copie_setting : function(setting) {
         var self = this;
         
@@ -860,7 +983,7 @@ var CopieWriter = makeClass(null, {
         if (phrases && 0 < phrases.length) {
             var jq_phrase_container = copie_context.get_phrase_container();
             jq_phrase_container.empty();
-    
+            
             for (var ci=0, len=phrases.length; ci < len; ci++) {
                 var phrase = phrases[ci];
                 Phrase({
@@ -880,8 +1003,17 @@ var CopieWriter = makeClass(null, {
 
 }); //  end of CopieWriter
 
-// 処理の開始
-CopieWriter();
+// ===== 処理の開始
+
+// オプション(設定ファイル)取得
+var url_copie_setting = null;
+if (w.location.href.match(/[?&]setting=([^&#]+)/)) {
+    var url_copie_setting = decodeURIComponent(RegExp.$1);
+}
+
+CopieWriter({
+    url_copie_setting : url_copie_setting
+});
 
 });
 
