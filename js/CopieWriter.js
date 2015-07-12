@@ -43,7 +43,7 @@ var CopieContext = makeClass(null, {
         var height = parameters.height;
         var color = parameters.color;
         var background_color = parameters.background_color;
-        var defalt_font_family = parameters.defalt_font_family;
+        var default_font_family = parameters.default_font_family;
         var default_font_size = parameters.default_font_size;
         var baseline = parameters.baseline;
         var align = parameters.align;
@@ -63,7 +63,7 @@ var CopieContext = makeClass(null, {
         if (!height) {height = jq_copie.height();}
         if (!color) {color = DEFAULT_COLOR;}
         if (!background_color) {background_color = DEFAULT_BACKGROUND_COLOR;}
-        if (!defalt_font_family) {defalt_font_family = DEFAULT_FONT_FAMILY;}
+        if (!default_font_family) {default_font_family = DEFAULT_FONT_FAMILY;}
         if (!default_font_size) {default_font_size = DEFAULT_FONT_SIZE;}
         if (!baseline) {baseline = DEFAULT_BASELINE;}
         if (!align) {align = DEFAULT_ALIGN;}
@@ -73,7 +73,7 @@ var CopieContext = makeClass(null, {
         ,   height : height
         ,   color : color
         ,   background_color : background_color
-        ,   defalt_font_family : defalt_font_family
+        ,   default_font_family : default_font_family
         ,   default_font_size : default_font_size
         ,   baseline : baseline
         ,   align : align
@@ -94,7 +94,7 @@ var CopieContext = makeClass(null, {
             width : self.width
         ,   height : self.height
         ,   background_color : self.background_color
-        ,   defalt_font_family : self.defalt_font_family
+        ,   default_font_family : self.default_font_family
         ,   default_font_size : self.default_font_size
         ,   baseline : self.baseline
         ,   align : self.align
@@ -111,7 +111,7 @@ var CopieContext = makeClass(null, {
         var height = parameters.height;
         var color = parameters.color;
         var background_color = parameters.background_color;
-        var defalt_font_family = parameters.defalt_font_family;
+        var default_font_family = parameters.default_font_family;
         var default_font_size = parameters.default_font_size;
         var baseline = parameters.baseline;
         var align = parameters.align;
@@ -133,8 +133,8 @@ var CopieContext = makeClass(null, {
         if (background_color) {
             self.background_color = background_color;
         }
-        if (defalt_font_family) {
-            self.defalt_font_family = defalt_font_family;
+        if (default_font_family) {
+            self.default_font_family = default_font_family;
         }
         if (default_font_size) {
             self.default_font_size = default_font_size;
@@ -191,7 +191,7 @@ var CopieContext = makeClass(null, {
         if (isNaN(size) || size <= 0.0) {size = self.default_font_size;}
         
         context.fillStyle = self.color;
-        context.font = size + 'px ' + self.defalt_font_family;
+        context.font = size + 'px ' + self.default_font_family;
         context.fillText(text, x, y);
         
     }   //  end of put_phrase()
