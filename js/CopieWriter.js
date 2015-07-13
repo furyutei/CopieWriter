@@ -190,7 +190,8 @@ var CopieContext = makeClass(null, {
         
         if (isNaN(x)) {x = 0;}
         if (isNaN(y)) {y = 0;}
-        if (isNaN(size) || size <= 0.0) {size = self.default_font_size;}
+        //if (isNaN(size) || size <= 0.0) {size = self.default_font_size;}
+        if (isNaN(size) || size <= 0.0) {size = 1;}
         
         context.fillStyle = self.color;
         context.font = size + 'px ' + self.default_font_family;
@@ -279,7 +280,8 @@ var Phrase = makeClass(null, {
         if (!text) {text = '';}
         if (isNaN(x)) {x = 0;}
         if (isNaN(y)) {y = 0;}
-        if (!size) {size = DEFAULT_FONT_SIZE;}
+        //if (!size) {size = DEFAULT_FONT_SIZE;}
+        if (!size) {size = 1;}
         
         if (!phrase_template_selector) {phrase_template_selector = DEFAULT_PHRASE_TEMPLATE_SELECTOR;}
         if (!phrase_container_selector) {phrase_container_selector = DEFAULT_PHRASE_CONTAINER_SELECTOR;}
@@ -394,10 +396,12 @@ var Phrase = makeClass(null, {
             self.jq_y.val(0);
         }
         if (isNaN(self.jq_size.val())) {
-            self.jq_size.val(DEFAULT_FONT_SIZE);
+            //self.jq_size.val(DEFAULT_FONT_SIZE);
+            self.jq_size.val(1);
         }
         if (self.jq_size.val() <= 0) {
-            self.jq_size.val(1);
+            //self.jq_size.val(1);
+            self.jq_size.val('');
         }
         
         if (current) {
@@ -518,6 +522,7 @@ var CopieWriter = makeClass(null, {
                 copie_context: copie_context
             ,   x : 8
             ,   y : 16
+            ,   size : copie_context.default_font_size
             ,   refresh_copy : true
             ,   current : true
             });
