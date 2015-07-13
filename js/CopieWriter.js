@@ -4,6 +4,8 @@
 var DEFAULT_CANVAS_SELECTOR = 'canvas#copie';
 var DEFAULT_DOWNLOAD_COPIE_SELECTOR = 'a#download-copie';
 var DEFAULT_DOWNLOAD_COPIE_BUTTON_SELECTOR = 'input#download-copie-button';
+var DEFAULT_DOWNLOAD_COPIE_SVG_SELECTOR = 'a#download-copie-svg';
+var DEFAULT_DOWNLOAD_COPIE_SVG_BUTTON_SELECTOR = 'input#download-copie-svg-button';
 var DEFAULT_DOWNLOAD_COPIE_SETTING_SELECTOR = 'a#download-copie-setting';
 var DEFAULT_DOWNLOAD_COPIE_SETTING_BUTTON_SELECTOR = 'input#download-copie-setting-button';
 var DEFAULT_UPLOAD_COPIE_SETTING_SELECTOR = 'input#upload-copie-setting';
@@ -95,6 +97,7 @@ var CopieContext = makeClass(null, {
         var setting = {
             width : self.width
         ,   height : self.height
+        ,   color : self.color
         ,   background_color : self.background_color
         ,   default_font_family : self.default_font_family
         ,   default_font_size : self.default_font_size
@@ -424,6 +427,8 @@ var CopieWriter = makeClass(null, {
         var canvas_selector = parameters.canvas_selector;
         var download_copie_selector = parameters.download_copie_selector;
         var download_copie_button_selector = parameters.download_copie_button_selector;
+        var download_copie_svg_selector = parameters.download_copie_svg_selector;
+        var download_copie_svg_button_selector = parameters.download_copie_svg_button_selector;
         var download_copie_setting_selector = parameters.download_copie_setting_selector;
         var download_copie_setting_button_selector = parameters.download_copie_setting_button_selector;
         var upload_copie_setting_selector = parameters.upload_copie_setting_selector;
@@ -442,6 +447,8 @@ var CopieWriter = makeClass(null, {
         if (!canvas_selector) {canvas_selector = DEFAULT_CANVAS_SELECTOR;}
         if (!download_copie_selector) {download_copie_selector = DEFAULT_DOWNLOAD_COPIE_SELECTOR;}
         if (!download_copie_button_selector) {download_copie_button_selector = DEFAULT_DOWNLOAD_COPIE_BUTTON_SELECTOR;}
+        if (!download_copie_svg_selector) {download_copie_svg_selector = DEFAULT_DOWNLOAD_COPIE_SVG_SELECTOR;}
+        if (!download_copie_svg_button_selector) {download_copie_svg_button_selector = DEFAULT_DOWNLOAD_COPIE_SVG_BUTTON_SELECTOR;}
         if (!download_copie_setting_selector) {download_copie_setting_selector = DEFAULT_DOWNLOAD_COPIE_SETTING_SELECTOR;}
         if (!download_copie_setting_button_selector) {download_copie_setting_button_selector = DEFAULT_DOWNLOAD_COPIE_SETTING_BUTTON_SELECTOR;}
         if (!upload_copie_setting_selector) {upload_copie_setting_selector = DEFAULT_UPLOAD_COPIE_SETTING_SELECTOR;}
@@ -459,6 +466,8 @@ var CopieWriter = makeClass(null, {
         var jq_copie = $(canvas_selector);
         var jq_download_copie = $(download_copie_selector);
         var jq_download_copie_button = $(download_copie_button_selector);
+        var jq_download_copie_svg = $(download_copie_svg_selector);
+        var jq_download_copie_svg_button = $(download_copie_svg_button_selector);
         var jq_download_copie_setting = $(download_copie_setting_selector);
         var jq_download_copie_setting_button = $(download_copie_setting_button_selector);
         var jq_upload_copie_setting = $(upload_copie_setting_selector);
@@ -474,6 +483,8 @@ var CopieWriter = makeClass(null, {
         self.jq_copie = jq_copie;
         self.jq_download_copie = jq_download_copie;
         self.jq_download_copie_button = jq_download_copie_button;
+        self.jq_download_copie_svg = jq_download_copie_svg;
+        self.jq_download_copie_svg_button = jq_download_copie_svg_button;
         self.jq_download_copie_setting = jq_download_copie_setting;
         self.jq_download_copie_setting_button = jq_download_copie_setting_button;
         self.jq_upload_copie_setting = jq_upload_copie_setting;
@@ -501,6 +512,7 @@ var CopieWriter = makeClass(null, {
         self.set_wheel_event();
         self.set_key_event();
         self.set_download_event();
+        self.set_download_svg_event();
         self.set_upload_setting_event();
         self.set_download_setting_event();
         self.set_color_picker_event();
@@ -514,6 +526,7 @@ var CopieWriter = makeClass(null, {
                 self.update_copie_setting(setting);
                 self.update_setting_filename(url_copie_setting.replace(/^.*?([^/]+)$/, '$1'));
                 self.update_copie_data_url();
+                self.update_svg_data_url();
                 self.update_setting_data_url();
             }, 'json');
         }
@@ -527,6 +540,7 @@ var CopieWriter = makeClass(null, {
             ,   current : true
             });
             self.update_copie_data_url();
+            self.update_svg_data_url();
             self.update_setting_data_url();
         }
     }   //  end of __init__()
@@ -648,6 +662,22 @@ var CopieWriter = makeClass(null, {
             }
             else {
                 self.mouse_click(self.jq_download_copie);
+            }
+        });
+        
+    }   //  end of set_download_event()
+
+,   set_download_svg_event : function() {
+        var self = this;
+        
+        self.jq_download_copie_svg_button.on('click', function(event) {
+            var blob = self.update_svg_data_url();
+            if (w.navigator.msSaveOrOpenBlob) { // IE10+
+                w.navigator.msSaveOrOpenBlob(blob, self.jq_download_copie_svg.attr('download'));
+                return false;
+            }
+            else {
+                self.mouse_click(self.jq_download_copie_svg);
             }
         });
         
@@ -841,6 +871,131 @@ var CopieWriter = makeClass(null, {
         self.jq_download_copie.attr('href', self.jq_copie.get(0).toDataURL('image/png'));
     }   //  end of update_copie_data_url()
 
+,   update_svg_data_url : function() {
+        var self = this;
+        
+        var setting = self.get_setting();
+
+        var update_xml_element_attributes = function(element, attributes) {
+            if (!element || !attributes) {
+                return element;
+            }
+            for (var key in attributes) {
+                if (!attributes.hasOwnProperty(key)) continue;
+                element.setAttribute(key, attributes[key]);
+            }
+            return element;
+        };  //  end of update_xml_element_attributes()
+        
+        var create_xml_element = function(tagname, attributes, text, doc) {
+            if (!doc) {doc = d;}
+            var element = doc.createElementNS("http://www.w3.org/2000/svg", tagname);
+            if (!element) {
+                return element;
+            }
+            update_xml_element_attributes(element, attributes);
+            if (text) {
+                element.appendChild(doc.createTextNode(text));
+            }
+            return element;
+        };  //  end of create_xml_element()
+        
+        var get_svg_text_anchor = function(canvas_align) {
+            switch (canvas_align) {
+                case 'left' :
+                    return 'start';
+                case 'right' :
+                    return 'end';
+                case 'center' :
+                default:
+                    return 'middle';
+            }
+        };  //  end of get_svg_text_anchor()
+        
+        var get_svg_dominant_baseline = function(canvas_baseline) {
+            switch (canvas_baseline) {
+                case 'top' :
+                    return 'text-before-edge';
+                case 'bottom' :
+                    return 'text-after-edge';
+                case 'middle' :
+                default :
+                    return 'central';
+            }
+        };  //  end of get_svg_dominant_baseline()
+        
+        var get_svg_baseline_adjust = function(canvas_baseline, size) {
+            switch (canvas_baseline) {
+                case 'bottom' :
+                    return size / 2;
+                case 'middle' :
+                    return size / 4;
+                case 'top' :
+                default :
+                    return 0;
+            }
+        };  //  end of get_svg_baseline_adjust()
+        
+        var xml_header = '<?xml version="1.0" encoding="UTF-8" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+        var svg_template = '<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" preserveAspectRatio="none"></svg>';
+        
+        var domparser = new DOMParser();
+        var xmldoc = domparser.parseFromString(svg_template, 'text/xml');
+        
+        var svg = xmldoc.getElementsByTagName('svg')[0];
+        
+        update_xml_element_attributes(svg, {
+            version : 1.1
+        ,   width : setting.width
+        ,   height : setting.height
+        ,   viewBox : '0 0 ' + setting.width + ' ' + setting.height
+        });
+        
+        var elm_g = create_xml_element('g', {
+            'font-family' : setting.default_font_family
+        ,   fill : setting.color
+        }, null, xmldoc);
+        
+        var rect = create_xml_element('rect', {
+            x : 0
+        ,   y : 0
+        ,   width : setting.width
+        ,   height : setting.height
+        ,   fill : setting.background_color
+        ,   stroke : (30 <= getBrightness(setting.background_color)) ? '#000' : setting.background_color
+        ,   'stroke-width' : 1
+        }, null, xmldoc);
+        
+        elm_g.appendChild(rect);
+        
+        var phrases = setting.phrases;
+        var dominant_baseline = get_svg_dominant_baseline(setting.baseline);
+        var text_anchor = get_svg_text_anchor(setting.align);
+        for (var ci=0, len=phrases.length; ci < len; ci++) {
+            var phrase = phrases[ci];
+            var text = create_xml_element('text', {
+                x : phrase.x
+            ,   y : phrase.y
+            //,   y : -(-phrase.y - get_svg_baseline_adjust(setting.baseline, phrase.size))
+            ,   'dominant-baseline' : dominant_baseline
+            ,   'font-size' : phrase.size
+            ,   'text-anchor' : text_anchor
+            }, phrase.text, xmldoc);
+            elm_g.appendChild(text);
+        }
+        
+        svg.appendChild(elm_g);
+        
+        var serializer = new XMLSerializer();
+        var svg_xml = xml_header + serializer.serializeToString(svg);
+        
+        var URL = w.URL || w.webkitURL;
+        var blob = new Blob([svg_xml], {'type':'image/svg+xml'});
+        self.jq_download_copie_svg.attr('href', URL.createObjectURL(blob));
+        
+        return blob;
+    }   //  end of update_svg_data_url()
+
 ,   update_setting_data_url : function() {
         var self = this;
         
@@ -872,6 +1027,7 @@ var CopieWriter = makeClass(null, {
                 self.set_setting(setting);
                 self.update_setting_filename(file.name);
                 self.update_copie_data_url();
+                self.update_svg_data_url();
                 self.update_setting_data_url();
             }
             catch (error) {
