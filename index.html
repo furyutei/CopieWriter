@@ -44,7 +44,8 @@
                 <!-- /#navi --></div>
                 <div id="toolbar" class="clearfix">
                     <div id="download-copie-setting-container">
-                        <a id="download-copie-setting" href="#" download="copie-setting.json">設定をダウンロード</a>
+                        <a id="download-copie-setting" class="hidden" href="#" download="copie-setting.json">設定のダウンロード</a>
+                        <input type="button" id="download-copie-setting-button" class="button" value="設定のダウンロード" />
                     </div>
                     
                     <div id="upload-copie-setting-container">
@@ -77,7 +78,8 @@
             <div id="copie-container" class="container">
                 <canvas id="copie" width="234" height="60"></canvas>
                 <div class="download-copie">
-                    <a id="download-copie" href="#" download="copie.png">コピィのダウンロード</a>
+                    <a id="download-copie" class="hidden" href="#" download="copie.png">コピィのダウンロード</a>
+                    <input type="button" id="download-copie-button" class="button" value="コピィのダウンロード" />
                 </div>
                 <form id="initial-copie-container" class="parts-container">
                     <label for="initial-copie">コピィ</label><input type="text" id="initial-copie" name="initial-copie" value="" />

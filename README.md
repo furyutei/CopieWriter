@@ -20,6 +20,11 @@ CopieWriter: コピィ・ライター
 [実際にコピィ・ライターが動作しているサイトはこちら。](http://furyu.nazo.cc/CopieWriter/)  
 
 
+■ 画面サンプル
+---
+![コピィ・ライター画面サンプル](https://raw.githubusercontent.com/furyutei/CopieWriter/master/images/%E3%82%B3%E3%83%94%E3%82%A3%E3%83%BB%E3%83%A9%E3%82%A4%E3%82%BF%E3%83%BC%E7%94%BB%E9%9D%A2%E3%82%B5%E3%83%B3%E3%83%97%E3%83%AB.jpg)
+
+
 ■ 関連記事
 ---
 - [コピィ・ライター(CopieWriter) - はてなコピィもどきのバナーを作成可能なサービスを作ってみた - 風柳メモ](http://d.hatena.ne.jp/furyu-tei/20150712/1436691902)  

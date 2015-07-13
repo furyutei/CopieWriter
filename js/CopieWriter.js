@@ -3,7 +3,9 @@
 //{ ■パラメータ
 var DEFAULT_CANVAS_SELECTOR = 'canvas#copie';
 var DEFAULT_DOWNLOAD_COPIE_SELECTOR = 'a#download-copie';
+var DEFAULT_DOWNLOAD_COPIE_BUTTON_SELECTOR = 'input#download-copie-button';
 var DEFAULT_DOWNLOAD_COPIE_SETTING_SELECTOR = 'a#download-copie-setting';
+var DEFAULT_DOWNLOAD_COPIE_SETTING_BUTTON_SELECTOR = 'input#download-copie-setting-button';
 var DEFAULT_UPLOAD_COPIE_SETTING_SELECTOR = 'input#upload-copie-setting';
 var DEFAULT_UPLOAD_COPIE_SETTING_BUTTON_SELECTOR = 'input#upload-copie-setting-button';
 var DEFAULT_UPLOAD_COPIE_SETTING_FILE_SELECTOR = '#upload-copie-setting-file';
@@ -417,7 +419,9 @@ var CopieWriter = makeClass(null, {
         
         var canvas_selector = parameters.canvas_selector;
         var download_copie_selector = parameters.download_copie_selector;
+        var download_copie_button_selector = parameters.download_copie_button_selector;
         var download_copie_setting_selector = parameters.download_copie_setting_selector;
+        var download_copie_setting_button_selector = parameters.download_copie_setting_button_selector;
         var upload_copie_setting_selector = parameters.upload_copie_setting_selector;
         var upload_copie_setting_button_selector = parameters.upload_copie_setting_button_selector;
         var upload_copie_setting_file_selector = parameters.upload_copie_setting_file_selector;
@@ -433,7 +437,9 @@ var CopieWriter = makeClass(null, {
         
         if (!canvas_selector) {canvas_selector = DEFAULT_CANVAS_SELECTOR;}
         if (!download_copie_selector) {download_copie_selector = DEFAULT_DOWNLOAD_COPIE_SELECTOR;}
+        if (!download_copie_button_selector) {download_copie_button_selector = DEFAULT_DOWNLOAD_COPIE_BUTTON_SELECTOR;}
         if (!download_copie_setting_selector) {download_copie_setting_selector = DEFAULT_DOWNLOAD_COPIE_SETTING_SELECTOR;}
+        if (!download_copie_setting_button_selector) {download_copie_setting_button_selector = DEFAULT_DOWNLOAD_COPIE_SETTING_BUTTON_SELECTOR;}
         if (!upload_copie_setting_selector) {upload_copie_setting_selector = DEFAULT_UPLOAD_COPIE_SETTING_SELECTOR;}
         if (!upload_copie_setting_button_selector) {upload_copie_setting_button_selector = DEFAULT_UPLOAD_COPIE_SETTING_BUTTON_SELECTOR;}
         if (!upload_copie_setting_file_selector) {upload_copie_setting_file_selector = DEFAULT_UPLOAD_COPIE_SETTING_FILE_SELECTOR;}
@@ -448,7 +454,9 @@ var CopieWriter = makeClass(null, {
         
         var jq_copie = $(canvas_selector);
         var jq_download_copie = $(download_copie_selector);
+        var jq_download_copie_button = $(download_copie_button_selector);
         var jq_download_copie_setting = $(download_copie_setting_selector);
+        var jq_download_copie_setting_button = $(download_copie_setting_button_selector);
         var jq_upload_copie_setting = $(upload_copie_setting_selector);
         var jq_upload_copie_setting_button = $(upload_copie_setting_button_selector);
         var jq_upload_copie_setting_file = $(upload_copie_setting_file_selector);
@@ -461,7 +469,9 @@ var CopieWriter = makeClass(null, {
         
         self.jq_copie = jq_copie;
         self.jq_download_copie = jq_download_copie;
+        self.jq_download_copie_button = jq_download_copie_button;
         self.jq_download_copie_setting = jq_download_copie_setting;
+        self.jq_download_copie_setting_button = jq_download_copie_setting_button;
         self.jq_upload_copie_setting = jq_upload_copie_setting;
         self.jq_upload_copie_setting_button = jq_upload_copie_setting_button;
         self.jq_upload_copie_setting_file = jq_upload_copie_setting_file;
@@ -495,9 +505,12 @@ var CopieWriter = makeClass(null, {
         self.set_phrase_add_event();
         self.set_copie_click_event();
         
-        if (self.url_copie_setting) {
-            $.get(self.url_copie_setting, function(setting) {
+        if (url_copie_setting) {
+            $.get(url_copie_setting, function(setting) {
                 self.update_copie_setting(setting);
+                self.update_setting_filename(url_copie_setting.replace(/^.*?([^/]+)$/, '$1'));
+                self.update_copie_data_url();
+                self.update_setting_data_url();
             }, 'json');
         }
         else {
@@ -508,6 +521,8 @@ var CopieWriter = makeClass(null, {
             ,   refresh_copy : true
             ,   current : true
             });
+            self.update_copie_data_url();
+            self.update_setting_data_url();
         }
     }   //  end of __init__()
     
@@ -515,7 +530,7 @@ var CopieWriter = makeClass(null, {
         var self = this;
         
         $(w).on('beforeunload', function(event) {
-            if (self.jq_download_copie.attr('href') != self.jq_copie.get(0).toDataURL()) {
+            if (self.jq_download_copie.attr('href') != self.jq_copie.get(0).toDataURL('image/png')) {
                 return '編集中のコピィを破棄して、ページを移動しますか？';
             };
         });
@@ -620,14 +635,16 @@ var CopieWriter = makeClass(null, {
 ,   set_download_event : function() {
         var self = this;
         
-        self.jq_download_copie.on('click', function(event) {
+        self.jq_download_copie_button.on('click', function(event) {
             self.update_copie_data_url();
             if (w.navigator.msSaveOrOpenBlob) { // IE10+
                 w.navigator.msSaveOrOpenBlob(self.jq_copie.get(0).msToBlob(), self.jq_download_copie.attr('download'));
                 return false;
             }
+            else {
+                self.mouse_click(self.jq_download_copie);
+            }
         });
-        self.update_copie_data_url();
         
     }   //  end of set_download_event()
 
@@ -656,14 +673,16 @@ var CopieWriter = makeClass(null, {
 ,   set_download_setting_event : function() {
         var self = this;
         
-        self.jq_download_copie_setting.on('click', function(event) {
+        self.jq_download_copie_setting_button.on('click', function(event) {
             var blob = self.update_setting_data_url();
             if (w.navigator.msSaveOrOpenBlob) { // IE10+
                 w.navigator.msSaveOrOpenBlob(blob, self.jq_download_copie_setting.attr('download'));
                 return false;
             }
+            else {
+                self.mouse_click(self.jq_download_copie_setting);
+            }
         });
-        self.update_setting_data_url();
         
     }   //  end of set_download_event()
 
@@ -754,6 +773,16 @@ var CopieWriter = makeClass(null, {
         
     }   //  end of set_phrase_add_event()
 
+,   mouse_click : function(jq_object) {
+        // ※ jQuery の click() や trigger('click') だとうまく行かないことがある(data URI が設定された A 要素等)
+        //jq_object.click();
+        //jq_object.trigger('click', [true]);
+        
+        // マウスイベントや DOM 要素の click() ならうまく行く
+        //var mouse_event = document.createEvent('MouseEvent'); mouse_event.initEvent("click", true, true); jq_object.get(0).dispatchEvent(mouse_event);
+        jq_object.get(0).click();
+    }   //  end of mouse_click()
+
 ,   add_phrase : function() {
         var self = this;
         
@@ -804,7 +833,7 @@ var CopieWriter = makeClass(null, {
 ,   update_copie_data_url : function() {
         var self = this;
         
-        self.jq_download_copie.attr('href', self.jq_copie.get(0).toDataURL());
+        self.jq_download_copie.attr('href', self.jq_copie.get(0).toDataURL('image/png'));
     }   //  end of update_copie_data_url()
 
 ,   update_setting_data_url : function() {
@@ -818,6 +847,12 @@ var CopieWriter = makeClass(null, {
         return blob;
     }   //  end of update_setting_data_url()
 
+,   update_setting_filename : function(filename) {
+        var self = this;
+        
+        self.jq_upload_copie_setting_file.text(filename);
+    }   //  end of update_setting_filename()
+
 ,   read_copie_setting_file : function(event) {
         var self = this;
         
@@ -830,7 +865,7 @@ var CopieWriter = makeClass(null, {
             try {
                 var setting = JSON.parse(setting_json);
                 self.set_setting(setting);
-                self.jq_upload_copie_setting_file.text(file.name);
+                self.update_setting_filename(file.name);
                 self.update_copie_data_url();
                 self.update_setting_data_url();
             }

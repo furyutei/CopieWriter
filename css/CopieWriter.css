@@ -24,6 +24,7 @@
 }
 
 body {
+    min-width: 1000px;
     font-weight: normal;
     line-height: 1.4;
     font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
@@ -149,7 +150,8 @@ div#header header div#menu div#toolbar div#download-copie-setting-container a {
 div#header header div#menu div#toolbar div#upload-copie-setting-container {
     float: left;
     margin: 0 16px 0 0;
-    width: 340px;
+    width: 300px;
+    overflow: hidden;
 }
 
 div#header header div#menu div#toolbar div#upload-copie-setting-container span#upload-copie-setting-file {
