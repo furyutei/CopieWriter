@@ -934,7 +934,7 @@ var CopieWriter = makeClass(null, {
             text_list.push(phrase_text);
             return phrase_text;
         });
-        text_list = text_list.slice(0, 50);
+        text_list = text_list.slice(0, 100); // ※フレーズ数の制限
         
         var flicker = function(middle, range, adjust) {
             if (!adjust) {adjust = 0;}
