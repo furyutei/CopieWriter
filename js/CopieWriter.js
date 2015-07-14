@@ -1,6 +1,10 @@
+"use strict";
+
 (function(w, d) {
 
 //{ ■パラメータ
+var DEBUG = false;
+
 var DEFAULT_CANVAS_SELECTOR = 'canvas#copie';
 var DEFAULT_DOWNLOAD_COPIE_SELECTOR = 'a#download-copie';
 var DEFAULT_DOWNLOAD_COPIE_BUTTON_SELECTOR = 'input#download-copie-button';
@@ -23,6 +27,8 @@ var DEFAULT_PHRASE_ADD_BUTTON_SELECTOR = 'input#phrase-add-button';
 
 var DEFAULT_FONT_FAMILY = "'Hiragino Kaku Gothic Pro', 'Meiryo', 'MS PGothic', 'sans-serif'";
 var DEFAULT_FONT_SIZE = 25;
+var DEFAULT_COPIE_WIDTH = 234;
+var DEFAULT_COPIE_HEIGHT = 60;
 var DEFAULT_COLOR = '#000000';
 var DEFAULT_BACKGROUND_COLOR = '#FFFFFF';
 var DEFAULT_BASELINE = 'middle';
@@ -63,8 +69,10 @@ var CopieContext = makeClass(null, {
         self.phrase_container_selector = phrase_container_selector;
         self.context = context;
         
-        if (!width) {width = jq_copie.width();}
-        if (!height) {height = jq_copie.height();}
+        //if (!width) {width = jq_copie.width();}
+        //if (!height) {height = jq_copie.height();}
+        if (!width) {width = DEFAULT_COPIE_WIDTH;}
+        if (!height) {height = DEFAULT_COPIE_HEIGHT;}
         if (!color) {color = DEFAULT_COLOR;}
         if (!background_color) {background_color = DEFAULT_BACKGROUND_COLOR;}
         if (!default_font_family) {default_font_family = DEFAULT_FONT_FAMILY;}
@@ -123,7 +131,7 @@ var CopieContext = makeClass(null, {
         
         var jq_copie = self.jq_copie;
         
-        context = self.get_context();
+        var context = self.get_context();
         if (width) {
             jq_copie.attr('width', width);
             self.width = width;
@@ -422,7 +430,9 @@ var CopieWriter = makeClass(null, {
     __init__ : function(parameters) {
         var self = this;
         
-        if (!parameters) parameters = {};
+        if (!parameters) {parameters = {};}
+        
+        var DEBUG = self.DEBUG = parameters.DEBUG;
         
         var canvas_selector = parameters.canvas_selector;
         var download_copie_selector = parameters.download_copie_selector;
@@ -531,20 +541,34 @@ var CopieWriter = makeClass(null, {
             }, 'json');
         }
         else {
+            /*
             Phrase({
-                copie_context: copie_context
+                copie_context : copie_context
             ,   x : 8
             ,   y : 16
             ,   size : copie_context.default_font_size
             ,   refresh_copy : true
             ,   current : true
             });
+            */
+            self.add_phrase();
+            
             self.update_copie_data_url();
             self.update_svg_data_url();
             self.update_setting_data_url();
         }
     }   //  end of __init__()
-    
+
+,   log : function(string) {
+        var self = this;
+        
+        if (!self.DEBUG) {
+            return;
+        }
+        console.log(string);
+        
+    }   //  end of log()
+
 ,   sel_pageunload_event : function() {
         var self = this;
         
@@ -818,23 +842,32 @@ var CopieWriter = makeClass(null, {
         jq_object.get(0).click();
     }   //  end of mouse_click()
 
-,   add_phrase : function() {
+,   add_phrase : function(option_parameters) {
         var self = this;
+        
+        if (!option_parameters) {option_parameters = {};}
         
         var copie_context = self.copie_context;
         
         var jq_current_phrase = copie_context.get_current_phrase();
         var parameters = {
-            copie_context: copie_context
+            copie_context : copie_context
+        ,   x : 8
+        ,   y : 16
+        ,   size : copie_context.default_font_size
         ,   refresh_copy : true
         ,   current : true
         ,   insert_position : jq_current_phrase
         };
+        $.extend(parameters, option_parameters);
+        
         if (jq_current_phrase) {
-            phrase_values = copie_context.get_phrase_values(jq_current_phrase);
+            var phrase_values = copie_context.get_phrase_values(jq_current_phrase);
             $.extend(parameters, phrase_values);
         }
         var phrase = Phrase(parameters);
+        
+        return phrase;
     }   //  end of add_phrase()
     
 ,   change_input_number : function(event, direction, multi) {
@@ -924,39 +957,143 @@ var CopieWriter = makeClass(null, {
             }
         };  //  end of get_svg_dominant_baseline()
         
-        var get_svg_baseline_adjust = function(canvas_baseline, size) {
-            switch (canvas_baseline) {
-                case 'bottom' :
-                    return size / 2;
-                case 'middle' :
-                    return size / 4;
-                case 'top' :
-                default :
-                    return 0;
+        var get_svg_onload_script = (function(){
+            if (self.DEBUG) {
+                var svg_onload_function = function() {
+                    // 参考
+                    //  [internet explorer 9 - How to center SVG text vertically in IE9 - Stack Overflow](http://stackoverflow.com/questions/5510432/how-to-center-svg-text-vertically-in-ie9)
+                    //  [How can I draw a box around text with SVG? - Stack Overflow](http://stackoverflow.com/questions/3001950/how-can-i-draw-a-box-around-text-with-svg)
+                    
+                    var useragent = window.navigator.userAgent.toLowerCase()
+                    ,   is_ie = (useragent.indexOf('msie') < 0 && useragent.indexOf('trident') < 0) ? false : true;
+                    window.onload = function() {
+                        function create_bounding_box(client_rect, padding) {
+                            if (!padding) {padding=0;}
+                            var elm_box = document.createElementNS(document.rootElement.namespaceURI, 'rect');
+                            elm_box.setAttribute('x', client_rect.x - padding);
+                            elm_box.setAttribute('y', client_rect.y - padding);
+                            elm_box.setAttribute('width', client_rect.width + padding * 2);
+                            elm_box.setAttribute('height', client_rect.height + padding * 2);
+                            return elm_box;
+                        }   //  end of create_bounding_box()
+                        
+                        function add_bounding_box(elm_text, padding) {
+                            if (!elm_text) return;
+                            //参考： [CSSOM/SVG Test](https://gist.github.com/mbostock/590163)
+                            //var rects = elm_text.getClientRects();
+                            //if (!rects) return;
+                            //var rect = rects[0];
+                            //rect.x = rect.left;
+                            //rect.y = rect.top;
+                            var rect = elm_text.getBBox();
+                            
+                            var elm_bbox = create_bounding_box(rect, padding);
+                            elm_bbox.setAttribute('style', [
+                                'fill: none;'
+                            ,   'stroke: black;'
+                            ,   'stroke-width: 0.5px;'
+                            ].join(''));
+                            elm_text.parentNode.appendChild(elm_bbox);
+                        };  //  end of add_bounding_box()
+                        
+                        var elm_text_list = document.getElementsByTagName('text');
+                        for (var ci=0, len = elm_text_list.length; ci < len; ci++ ) {
+                            var elm_text = elm_text_list[ci]
+                            ,   text_x = parseInt(elm_text.getAttribute('x'))
+                            ,   text_y = parseInt(elm_text.getAttribute('y'))
+                            ,   rect = elm_text.getBBox()
+                            ,   rect_x = rect.x
+                            ,   rect_y = rect.y
+                            ,   rect_height = rect.height
+                            ,   rect_width = rect.width
+                            ,   font_size = parseInt(window.getComputedStyle(elm_text)['fontSize'])
+                            ,   offset_y = ___CALC_OFFSET_Y___;
+                            
+                            if (is_ie) {
+                                elm_text.setAttribute('transform', 'translate(0, ' + offset_y + ')');
+                            }
+                            add_bounding_box(elm_text, 1);
+                        }
+                    };
+                };  //  end of svg_onload_function()
             }
-        };  //  end of get_svg_baseline_adjust()
+            else {
+                /*
+                var svg_onload_function = function() { // 圧縮前
+                    var useragent = window.navigator.userAgent.toLowerCase();
+                    if (useragent.indexOf('msie') < 0 && useragent.indexOf('trident') < 0) {
+                        return;
+                    }
+                    window.onload = function() {
+                        var elm_text_list = document.getElementsByTagName('text');
+                        for (var ci=0, len = elm_text_list.length; ci < len; ci++ ) {
+                            var elm_text = elm_text_list[ci]
+                            ,   text_y = parseInt(elm_text.getAttribute('y'))
+                            ,   rect = elm_text.getBBox()
+                            ,   rect_y = rect.y
+                            ,   rect_height = rect.height
+                            ,   offset_y = ___CALC_OFFSET_Y___;
+                            
+                            elm_text.setAttribute('transform', 'translate(0, ' + offset_y + ')')
+                        }
+                    }
+                };  //  end of svg_onload_function()
+                */
+                // [JS Minifier](http://fmarcia.info/jsmin/test.html) を用いて圧縮
+                var svg_onload_function = function(){var useragent=window.navigator.userAgent.toLowerCase();if(useragent.indexOf('msie')<0&&useragent.indexOf('trident')<0){return;}
+window.onload=function(){var elm_text_list=document.getElementsByTagName('text');for(var ci=0,len=elm_text_list.length;ci<len;ci++){var elm_text=elm_text_list[ci],text_y=parseInt(elm_text.getAttribute('y')),rect=elm_text.getBBox(),rect_y=rect.y,rect_height=rect.height,offset_y=___CALC_OFFSET_Y___;elm_text.setAttribute('transform','translate(0, '+offset_y+')')}}};
+            }
+            return function(canvas_baseline) {
+                var calc_offset_y;
+                    switch (canvas_baseline) {
+                        case 'top' :
+                            calc_offset_y = '(text_y-rect_y)';
+                            break;
+                        case 'bottom' :
+                            calc_offset_y = '(text_y-rect_y-rect_height)';
+                            break;
+                        case 'middle' :
+                        default :
+                            calc_offset_y = '(text_y-rect_y-rect_height/2)';
+                            break;
+                    }
+                var svg_onload_script = '(' + svg_onload_function.toString().replace(/___CALC_OFFSET_Y___/g, calc_offset_y) + ')();';
+                return svg_onload_script;
+            };
+        })();   //  end of get_svg_onload_script()
         
-        var xml_header = '<?xml version="1.0" encoding="UTF-8" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+        
+        var xml_header = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>';
         var svg_template = '<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" version="1.1" preserveAspectRatio="none"></svg>';
         
         var domparser = new DOMParser();
         var xmldoc = domparser.parseFromString(svg_template, 'text/xml');
         
-        var svg = xmldoc.getElementsByTagName('svg')[0];
-        
-        update_xml_element_attributes(svg, {
+        var elm_svg = xmldoc.getElementsByTagName('svg')[0];
+        update_xml_element_attributes(elm_svg, {
             version : 1.1
         ,   width : setting.width
         ,   height : setting.height
         ,   viewBox : '0 0 ' + setting.width + ' ' + setting.height
         });
         
-        var elm_g = create_xml_element('g', {
+        var elm_script = create_xml_element('script', {
+        }, null, xmldoc);
+        elm_script.appendChild(xmldoc.createCDATASection(
+            get_svg_onload_script(setting.baseline)
+        ));
+        
+        elm_svg.appendChild(elm_script);
+        
+        var elm_g_graph = create_xml_element('g', {
+        }, null, xmldoc);
+        
+        var elm_g_text = create_xml_element('g', {
             'font-family' : setting.default_font_family
         ,   fill : setting.color
         }, null, xmldoc);
         
-        var rect = create_xml_element('rect', {
+        var elm_rect = create_xml_element('rect', {
             x : 0
         ,   y : 0
         ,   width : setting.width
@@ -966,28 +1103,41 @@ var CopieWriter = makeClass(null, {
         ,   'stroke-width' : 1
         }, null, xmldoc);
         
-        elm_g.appendChild(rect);
+        elm_g_graph.appendChild(elm_rect);
         
         var phrases = setting.phrases;
         var dominant_baseline = get_svg_dominant_baseline(setting.baseline);
         var text_anchor = get_svg_text_anchor(setting.align);
         for (var ci=0, len=phrases.length; ci < len; ci++) {
             var phrase = phrases[ci];
-            var text = create_xml_element('text', {
+            
+            if (self.DEBUG) {
+                var elm_line = create_xml_element('line', {
+                    x1 : 0
+                ,   y1 : phrase.y
+                ,   x2 : setting.width - 1
+                ,   y2 : phrase.y
+                ,   stroke : 'red'
+                ,   'stroke-dasharray' : 2
+                }, null, xmldoc);
+                elm_g_graph.appendChild(elm_line);
+            }
+            var elm_text = create_xml_element('text', {
                 x : phrase.x
             ,   y : phrase.y
-            //,   y : -(-phrase.y - get_svg_baseline_adjust(setting.baseline, phrase.size))
-            ,   'dominant-baseline' : dominant_baseline
             ,   'font-size' : phrase.size
+            ,   'dominant-baseline' : dominant_baseline // IE では未サポート・参考：[[MS-SVG]: [SVG11] Section 10.9.2, Baseline alignment properties](https://msdn.microsoft.com/en-us/library/gg558060(v=vs.85).aspx)
             ,   'text-anchor' : text_anchor
             }, phrase.text, xmldoc);
-            elm_g.appendChild(text);
+            
+            elm_g_text.appendChild(elm_text);
         }
         
-        svg.appendChild(elm_g);
+        elm_svg.appendChild(elm_g_graph);
+        elm_svg.appendChild(elm_g_text);
         
         var serializer = new XMLSerializer();
-        var svg_xml = xml_header + serializer.serializeToString(svg);
+        var svg_xml = xml_header + serializer.serializeToString(elm_svg);
         
         var URL = w.URL || w.webkitURL;
         var blob = new Blob([svg_xml], {'type':'image/svg+xml'});
@@ -1183,7 +1333,7 @@ var CopieWriter = makeClass(null, {
             for (var ci=0, len=phrases.length; ci < len; ci++) {
                 var phrase = phrases[ci];
                 Phrase({
-                    copie_context: copie_context
+                    copie_context : copie_context
                 ,   text: phrase.text
                 ,   x: phrase.x
                 ,   y: phrase.y
@@ -1208,7 +1358,8 @@ if (w.location.href.match(/[?&]setting=([^&#]+)/)) {
 }
 
 CopieWriter({
-    url_copie_setting : url_copie_setting
+    DEBUG : DEBUG
+,   url_copie_setting : url_copie_setting
 });
 
 });

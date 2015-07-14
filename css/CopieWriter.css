@@ -24,7 +24,7 @@
 }
 
 body {
-    min-width: 1000px;
+    min-width: 900px;
     font-weight: normal;
     line-height: 1.4;
     font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
@@ -83,7 +83,7 @@ div#header {
 }
 
 div#header header {
-    min-width: 1000px;
+    min-width: 900px;
 }
 
 div#header header h1 {
