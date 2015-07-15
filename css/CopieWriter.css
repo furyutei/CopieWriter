@@ -25,6 +25,8 @@
 
 body {
     min-width: 900px;
+    margin: 0 0 0 0;
+    padding 0 0 0 0;
     font-weight: normal;
     line-height: 1.4;
     font-family: "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
@@ -171,13 +173,14 @@ div#header header div#menu div#toolbar div#phrase-toolbar {
 div#contents {
     margin: 60px auto 0 auto;
     overflow: hidden;
+    position: relative;
 }
 
 div#contents div#main {
-    overflow: hidden;
     float: right;
     width: 100%;
     margin: 0 0 0 -320px;
+    overflow: hidden;
 }
 
 div#contents div#main div#main-inner {
@@ -271,6 +274,7 @@ div#contents div#sidebar div#copie-container form#initial-copie-container input#
 
 div#contents div#sidebar div#help-container {
     background: #f0fff0;
+    overflow: auto;
 }
 
 div#contents div#sidebar div#help-container h2 {

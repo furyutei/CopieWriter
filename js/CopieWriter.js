@@ -884,12 +884,12 @@ var CopieWriter = makeClass(null, {
         
         var value = parseInt(jq_target.val());
         switch (target.name) {
-            case 'x':
-            case 'y':
+            case 'x' :
+            case 'y' :
                 if (isNaN(value)) {value = 0;}
                 jq_target.val(value + delta);
                 break;
-            case 'size':
+            case 'size' :
                 if (isNaN(value)) {value = DEFAULT_FONT_SIZE;}
                 jq_target.val((0 < value + delta) ? value + delta : 1);
                 break;
@@ -1090,6 +1090,7 @@ window.onload=function(){var elm_text_list=document.getElementsByTagName('text')
         
         var elm_g_text = create_xml_element('g', {
             'font-family' : setting.default_font_family
+        ,   'font-size' : setting.default_font_size
         ,   fill : setting.color
         }, null, xmldoc);
         
@@ -1140,7 +1141,7 @@ window.onload=function(){var elm_text_list=document.getElementsByTagName('text')
         var svg_xml = xml_header + serializer.serializeToString(elm_svg);
         
         var URL = w.URL || w.webkitURL;
-        var blob = new Blob([svg_xml], {'type':'image/svg+xml'});
+        var blob = new Blob([svg_xml], {'type' : 'image/svg+xml'});
         self.jq_download_copie_svg.attr('href', URL.createObjectURL(blob));
         
         return blob;
@@ -1151,7 +1152,7 @@ window.onload=function(){var elm_text_list=document.getElementsByTagName('text')
         
         var setting_json = JSON.stringify(self.get_setting());
         var URL = w.URL || w.webkitURL;
-        var blob = new Blob([setting_json], {'type':'text/plain'});
+        var blob = new Blob([setting_json], {'type' : 'text/plain'});
         self.jq_download_copie_setting.attr('href', URL.createObjectURL(blob));
         
         return blob;
@@ -1171,9 +1172,19 @@ window.onload=function(){var elm_text_list=document.getElementsByTagName('text')
         
         var reader = new FileReader();
         reader.onloadend = function() {
-            var setting_json = reader.result;
+            var setting_text = reader.result;
             try {
-                var setting = JSON.parse(setting_json);
+                try {
+                    var setting = self.parse_setting_json(setting_text);
+                }
+                catch (error_json) {
+                    try {
+                        var setting = self.parse_setting_svg(setting_text);
+                    }
+                    catch (error_svg) {
+                        throw new Error('指定された設定ファイルは不正です: ' + error_json.message + ', ' + error_svg.message);
+                    }
+                }
                 self.set_setting(setting);
                 self.update_setting_filename(file.name);
                 self.update_copie_data_url();
@@ -1186,6 +1197,82 @@ window.onload=function(){var elm_text_list=document.getElementsByTagName('text')
         };
         reader.readAsText(file);
     }   //  end of read_copie_setting_file()
+
+,   parse_setting_json : function(setting_json) {
+        var self = this;
+        
+        var setting = JSON.parse(setting_json);
+        return setting
+    }   //  end of parse_setting_json()
+
+,   parse_setting_svg : function(setting_svg) {
+        var self = this;
+        
+        var setting = {phrases : []};
+        
+        var domparser = new DOMParser();
+        var xmldoc = domparser.parseFromString(setting_svg, 'text/xml');
+        
+        var elm_svg = xmldoc.getElementsByTagName('svg')[0];
+        
+        setting.width = elm_svg.getAttribute('width');
+        setting.height = elm_svg.getAttribute('height');
+        
+        var get_canvas_text_align = function(text_anchor) {
+            switch (text_anchor) {
+                case 'start' :
+                    return 'left';
+                case 'end' :
+                    return 'right';
+                case 'middle' :
+                default:
+                    return 'center';
+            }
+        };  //  end of get_canvas_text_baseline()
+        
+        var get_canvas_text_baseline = function(dominant_baseline) {
+            switch (dominant_baseline) {
+                case 'text-before-edge' :
+                    return 'top';
+                case 'text-after-edge' :
+                    return 'bottom';
+                case 'central' :
+                default :
+                    return 'middle';
+            }
+        };  //  end of get_canvas_text_baseline()
+        
+        var phrases = setting.phrases;
+        var elm_g_list = elm_svg.getElementsByTagName('g');
+        for (var ci=0; ci < elm_g_list.length; ci++) {
+            var elm_g = elm_g_list[ci], font_family = elm_g.getAttribute('font-family');
+            if (!font_family) {
+                var elm_rect = elm_g.getElementsByTagName('rect')[0];
+                setting.background_color = elm_rect.getAttribute('fill');
+                continue;
+            }
+            setting.default_font_family = font_family;
+            setting.default_font_size = elm_g.getAttribute('font-size');
+            if (!setting.default_font_size) {setting.default_font_size = self.default_font_size;}
+            setting.color = elm_g.getAttribute('fill');
+            
+            var elm_text_list = elm_g.getElementsByTagName('text');
+            for (var cj=0; cj < elm_text_list.length; cj++) {
+                var elm_text = elm_text_list[cj];
+                if (cj == 0) {
+                    setting.align = get_canvas_text_align(elm_text.getAttribute('text-anchor'))
+                    setting.baseline = get_canvas_text_baseline(elm_text.getAttribute('dominant-baseline'));
+                }
+                phrases.push({
+                    text : elm_text.childNodes[0].nodeValue
+                ,   x : elm_text.getAttribute('x')
+                ,   y : elm_text.getAttribute('y')
+                ,   size : elm_text.getAttribute('font-size')
+                })
+            }
+        }
+        return setting
+    }   //  end of parse_setting_svg()
 
 ,   set_setting : function(setting) {
         var self = this;
@@ -1275,10 +1362,10 @@ window.onload=function(){var elm_text_list=document.getElementsByTagName('text')
                 case    'top' :
                     adjust_y = -(size / 2);
                     break;
-                case    'bottom':
+                case    'bottom' :
                     adjust_y = size;
                     break;
-                case    'middle':
+                case    'middle' :
                 default:
                     adjust_y = 0;
                     break;
@@ -1357,10 +1444,30 @@ if (w.location.href.match(/[?&]setting=([^&#]+)/)) {
     var url_copie_setting = decodeURIComponent(RegExp.$1);
 }
 
+// メイン処理
 CopieWriter({
     DEBUG : DEBUG
 ,   url_copie_setting : url_copie_setting
 });
+
+// 画面サイズに応じて HELP の高さを調整
+(function(){
+var jq_help_container = $('div#sidebar div#help-container')
+,   padding_height = 10
+,   help_container_min_height = 80
+,   help_container_max_height = jq_help_container.height();
+
+$(w).on('load resize', function(event){
+    var overflow = $('div#header').height() + $('div#sidebar div#copie-container').height() + help_container_max_height + padding_height - $(w).height();
+    if (overflow <= 0) {
+        jq_help_container.height('auto');
+        return;
+    }
+    var help_container_height = help_container_max_height - overflow;
+    if (help_container_height < help_container_min_height) {help_container_height = help_container_min_height;}
+    jq_help_container.height(help_container_height);
+});
+})();
 
 });
 
